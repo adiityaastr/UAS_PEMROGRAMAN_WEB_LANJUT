@@ -25,8 +25,12 @@
 
                 @can('isAdmin')
                     <a href="{{ route('books.index') }}"
-                        class="nav-link {{ request()->routeIs('books.*') ? 'active' : '' }}">
-                        <span>Buku</span>
+                        class="nav-link {{ request()->routeIs('books.index') || request()->routeIs('books.edit') ? 'active' : '' }}">
+                        <span>Kelola Buku</span>
+                    </a>
+                    <a href="{{ route('books.create') }}"
+                        class="nav-link {{ request()->routeIs('books.create') ? 'active' : '' }}">
+                        <span>Tambah Buku Baru</span>
                     </a>
                 @endcan
 

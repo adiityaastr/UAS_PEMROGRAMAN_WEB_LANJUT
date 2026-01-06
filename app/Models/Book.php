@@ -13,6 +13,10 @@ class Book extends Model
         'code',
         'title',
         'author',
+        'publisher',
+        'year',
+        'edition',
+        'isbn',
         'stock',
     ];
 

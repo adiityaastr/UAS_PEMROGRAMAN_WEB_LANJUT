@@ -16,6 +16,8 @@ Route::middleware(['auth'])->group(function () {
     // Admin Routes
     Route::middleware(['can:isAdmin'])->group(function () {
         Route::resource('books', BookController::class);
+        Route::put('/books/{book}/update-stock', [BookController::class, 'updateStock'])->name('books.update-stock');
+        Route::get('/api/books/preview-code', [BookController::class, 'getPreviewCode'])->name('api.books.preview-code');
     });
 
     // Shared Routes (Admin & Petugas)
@@ -24,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
     // Shared Routes (View Loans)
     Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
     Route::get('/loans/report', [LoanController::class, 'report'])->name('loans.report');
+    Route::get('/api/user-loans/{user}', [LoanController::class, 'getUserLoans'])->name('api.user-loans');
 
     // Petugas Routes
     Route::middleware(['can:isPetugas'])->group(function () {

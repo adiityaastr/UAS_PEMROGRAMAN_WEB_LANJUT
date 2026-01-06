@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1 style="margin-bottom: 2rem; font-weight: 800;">Dashboard</h1>
+    <h1>Dashboard</h1>
 
     <div class="grid">
         <div class="glass stat-card fade-in" style="animation-delay: 0.1s;">

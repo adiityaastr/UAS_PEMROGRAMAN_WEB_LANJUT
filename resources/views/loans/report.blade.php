@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1 style="margin-bottom: 2rem;">Laporan Peminjaman Harian</h1>
+    <h1>Laporan Peminjaman Harian</h1>
 
     <div class="glass fade-in">
         <div style="overflow-x: auto;">

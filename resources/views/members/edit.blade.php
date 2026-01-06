@@ -1,28 +1,46 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1 style="margin-bottom: 2rem;">Edit Anggota</h1>
+    <h1>Edit Anggota</h1>
 
     <div class="glass fade-in" style="max-width: 600px;">
-        <form action="{{ route('members.update', $member) }}" method="POST">
+        <form action="{{ route('members.update', $member) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
+            <div class="form-group">
+                <label class="form-label">Kode Unik (NIM)</label>
+                <input type="text" class="form-control" value="{{ $member->kode_unik ?? '-' }}" disabled
+                    style="background: rgba(148, 163, 184, 0.1); cursor: not-allowed; font-family: monospace; letter-spacing: 0.1em; font-size: 1.1rem; font-weight: 600;">
+                <small style="color: var(--text-muted);">Kode unik 9 digit angka tidak dapat diubah</small>
+            </div>
             <div class="form-group">
                 <label class="form-label">Nama Lengkap</label>
                 <input type="text" name="name" class="form-control" required value="{{ old('name', $member->name) }}">
             </div>
             <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" required value="{{ old('email', $member->email) }}">
+                <label class="form-label">Foto Pengguna</label>
+                @if($member->foto)
+                    <div style="margin-bottom: 0.75rem;">
+                        <img src="{{ asset('storage/' . $member->foto) }}" alt="Foto {{ $member->name }}"
+                            class="member-photo">
+                    </div>
+                @endif
+                <input type="file" name="foto" class="form-control" accept="image/*">
+                <small style="color: var(--text-muted);">Format: JPG, PNG, GIF (Maks. 2MB). Kosongkan jika tidak ingin mengubah.</small>
             </div>
             <div class="form-group">
-                <label class="form-label">Kata Sandi Baru (Opsional)</label>
-                <input type="password" name="password" class="form-control"
-                    placeholder="Biarkan kosong jika tidak ingin mengubah">
+                <label class="form-label">Tempat Lahir</label>
+                <input type="text" name="tempat_lahir" class="form-control" required
+                    value="{{ old('tempat_lahir', $member->tempat_lahir) }}" placeholder="Contoh: Jakarta">
             </div>
-            <div style="margin-top: 2rem;">
+            <div class="form-group">
+                <label class="form-label">Tanggal Lahir</label>
+                <input type="date" name="tanggal_lahir" class="form-control" required
+                    value="{{ old('tanggal_lahir', $member->tanggal_lahir ? $member->tanggal_lahir->format('Y-m-d') : '') }}">
+            </div>
+            <div class="form-actions">
+                <a href="{{ route('members.index') }}" class="btn btn-secondary">Batal</a>
                 <button type="submit" class="btn btn-primary">Perbarui Anggota</button>
-                <a href="{{ route('members.index') }}" class="btn" style="background: rgba(148, 163, 184, 0.1);">Batal</a>
             </div>
         </form>
     </div>
