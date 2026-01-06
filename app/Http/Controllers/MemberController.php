@@ -70,13 +70,21 @@ class MemberController extends Controller
             'tanggal_lahir' => 'required|date',
         ]);
 
+        // Generate unique email dengan timestamp + random string untuk menghindari duplikat
+        $uniqueEmail = 'member' . time() . '_' . Str::random(6) . '@perpustakaan.local';
+        
+        // Pastikan email unik (jika masih duplikat, generate lagi)
+        while (User::where('email', $uniqueEmail)->exists()) {
+            $uniqueEmail = 'member' . time() . '_' . Str::random(6) . '@perpustakaan.local';
+        }
+
         $data = [
             'name' => $request->name,
             'tempat_lahir' => $request->tempat_lahir,
             'tanggal_lahir' => $request->tanggal_lahir,
             'kode_unik' => $this->generateKodeUnik(),
             'role' => 'member',
-            'email' => 'member' . time() . '@perpustakaan.local',
+            'email' => $uniqueEmail,
             'password' => Hash::make('password123'),
         ];
 

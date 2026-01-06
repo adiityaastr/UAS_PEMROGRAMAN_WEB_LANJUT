@@ -26,7 +26,7 @@ Route::middleware(['auth'])->group(function () {
     // Shared Routes (View Loans)
     Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
     Route::get('/loans/report', [LoanController::class, 'report'])->name('loans.report');
-    Route::get('/api/user-loans/{user}', [LoanController::class, 'getUserLoans'])->name('api.user-loans');
+    Route::get('/api/user-loans/{userId}', [LoanController::class, 'getUserLoans'])->name('api.user-loans');
 
     // Petugas Routes
     Route::middleware(['can:isPetugas'])->group(function () {
