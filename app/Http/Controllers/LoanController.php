@@ -35,6 +35,18 @@ class LoanController extends Controller
 
         $loans = $query->latest()->get();
         
+        // Update fine for overdue loans
+        foreach ($loans as $loan) {
+            if ($loan->status === 'borrowed' && $loan->isOverdue()) {
+                $calculatedFine = $loan->calculateFine();
+                // Update fine in database if different
+                if ($loan->fine != $calculatedFine) {
+                    $loan->fine = $calculatedFine;
+                    $loan->save();
+                }
+            }
+        }
+        
         return view('loans.index', compact('loans'));
     }
 
@@ -124,14 +136,17 @@ class LoanController extends Controller
         $loan->actual_return_date = now();
         $loan->status = 'returned';
 
-        // Calculate Fine
-        // Denda perhari 2.000
-        $dueDate = Carbon::parse($loan->return_date);
-        $returnDate = Carbon::parse($loan->actual_return_date);
+        // Calculate Fine - use the fine that's already calculated or calculate if not set
+        if ($loan->fine == 0) {
+            $dueDate = Carbon::parse($loan->return_date)->startOfDay();
+            $returnDate = Carbon::parse($loan->actual_return_date)->startOfDay();
 
-        if ($returnDate->gt($dueDate)) {
-            $daysLate = $returnDate->diffInDays($dueDate);
-            $loan->fine = $daysLate * 2000;
+            if ($returnDate->gt($dueDate)) {
+                $daysLate = $returnDate->diffInDays($dueDate, false);
+                if ($daysLate > 0) {
+                    $loan->fine = $daysLate * 2000;
+                }
+            }
         }
 
         $loan->save();
@@ -142,15 +157,92 @@ class LoanController extends Controller
         return redirect()->route('loans.index')->with('success', 'Buku berhasil dikembalikan. Denda: Rp ' . number_format($loan->fine, 0, ',', '.'));
     }
 
-    public function report()
+    public function report(Request $request)
     {
-        // Daily loan report
-        $dailyLoans = Loan::selectRaw('DATE(loan_date) as date, count(*) as total')
-            ->groupBy('date')
-            ->orderBy('date', 'desc')
+        // Get filter parameters
+        $month = $request->get('month', date('Y-m'));
+        $year = $request->get('year', date('Y'));
+        
+        // Parse month and year
+        $startDate = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+        $endDate = Carbon::createFromFormat('Y-m', $month)->endOfMonth();
+        
+        // Get all loans in the period
+        $loans = Loan::with(['user', 'book'])
+            ->whereBetween('loan_date', [$startDate, $endDate])
+            ->orderBy('loan_date', 'desc')
             ->get();
-
-        return view('loans.report', compact('dailyLoans'));
+        
+        // Update fines for overdue loans
+        foreach ($loans as $loan) {
+            if ($loan->status === 'borrowed' && $loan->isOverdue()) {
+                $calculatedFine = $loan->calculateFine();
+                if ($loan->fine != $calculatedFine) {
+                    $loan->fine = $calculatedFine;
+                    $loan->save();
+                }
+            }
+        }
+        
+        // Statistics
+        $totalLoans = $loans->count();
+        $borrowedCount = $loans->where('status', 'borrowed')->count();
+        $returnedCount = $loans->where('status', 'returned')->count();
+        $overdueCount = $loans->filter(function($loan) {
+            return $loan->status === 'borrowed' && $loan->isOverdue();
+        })->count();
+        
+        // Calculate total fines
+        $totalFines = $loans->sum(function($loan) {
+            return $loan->calculateFine();
+        });
+        
+        $paidFines = $loans->where('status', 'returned')->sum('fine');
+        $pendingFines = $totalFines - $paidFines;
+        
+        // Daily statistics
+        $dailyStats = $loans->groupBy(function($loan) {
+            return Carbon::parse($loan->loan_date)->format('Y-m-d');
+        })->map(function($dayLoans) {
+            return [
+                'date' => Carbon::parse($dayLoans->first()->loan_date)->format('Y-m-d'),
+                'total' => $dayLoans->count(),
+                'borrowed' => $dayLoans->where('status', 'borrowed')->count(),
+                'returned' => $dayLoans->where('status', 'returned')->count(),
+            ];
+        })->sortByDesc('date')->values();
+        
+        // Most borrowed books
+        $popularBooks = $loans->groupBy('book_id')->map(function($bookLoans) {
+            return [
+                'book' => $bookLoans->first()->book,
+                'count' => $bookLoans->count(),
+            ];
+        })->sortByDesc('count')->take(5)->values();
+        
+        // Get available months/years for filter
+        $availableMonths = Loan::selectRaw('DATE_FORMAT(loan_date, "%Y-%m") as month')
+            ->distinct()
+            ->orderBy('month', 'desc')
+            ->pluck('month');
+        
+        return view('loans.report', compact(
+            'loans',
+            'totalLoans',
+            'borrowedCount',
+            'returnedCount',
+            'overdueCount',
+            'totalFines',
+            'paidFines',
+            'pendingFines',
+            'dailyStats',
+            'popularBooks',
+            'month',
+            'year',
+            'startDate',
+            'endDate',
+            'availableMonths'
+        ));
     }
 
     public function getUserLoans($userId)

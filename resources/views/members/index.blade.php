@@ -14,7 +14,9 @@
                         <th>Foto</th>
                         <th>Kode Unik</th>
                         <th>Nama Lengkap</th>
-                        <th>Tempat & Tanggal Lahir</th>
+                        <th>Program Studi</th>
+                        <th>Semester</th>
+                        <th>Status</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -41,9 +43,26 @@
                                 @endif
                             </td>
                             <td><strong>{{ $member->name }}</strong></td>
+                            <td>{{ $member->program_studi ?? '-' }}</td>
                             <td>
-                                {{ $member->tempat_lahir ?? '-' }}, 
-                                {{ $member->tanggal_lahir ? $member->tanggal_lahir->format('d M Y') : '-' }}
+                                @if($member->semester)
+                                    <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary-color);">
+                                        Semester {{ $member->semester }}
+                                    </span>
+                                @else
+                                    <span style="color: var(--text-muted);">-</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if(($member->status ?? 'aktif') == 'aktif')
+                                    <span class="badge" style="background: rgba(34, 197, 94, 0.1); color: rgb(34, 197, 94);">
+                                        Aktif
+                                    </span>
+                                @else
+                                    <span class="badge" style="background: rgba(239, 68, 68, 0.1); color: rgb(239, 68, 68);">
+                                        Non-Aktif
+                                    </span>
+                                @endif
                             </td>
                             <td>
                                 <div class="table-actions">
@@ -59,7 +78,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">Belum ada
+                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">Belum ada
                                 anggota yang terdaftar.</td>
                         </tr>
                     @endforelse

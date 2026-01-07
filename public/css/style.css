@@ -69,8 +69,9 @@ a {
 
 /* Layout */
 .app-container {
-    display: flex;
+    display: block;
     min-height: 100vh;
+    position: relative;
 }
 
 .sidebar {
@@ -83,6 +84,11 @@ a {
     flex-direction: column;
     transition: background 0.3s ease, border-color 0.3s ease;
     z-index: 10;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    top: 0;
+    left: 0;
 }
 
 .main-content {
@@ -90,6 +96,8 @@ a {
     padding: 2rem;
     overflow-y: auto;
     position: relative;
+    margin-left: 260px;
+    width: calc(100% - 260px);
 }
 
 /* Components */
@@ -290,6 +298,57 @@ h1 {
     background: var(--hover-bg);
 }
 
+/* Dropdown styling */
+select.form-control {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2.5rem;
+}
+
+/* Styling untuk option - mudah dibaca dan nyaman dilihat */
+select.form-control option {
+    padding: 0.625rem 0.75rem;
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+/* Hover state untuk option - lebih jelas */
+select.form-control option:hover {
+    background: rgba(59, 130, 246, 0.2);
+    color: #ffffff;
+}
+
+/* Selected state untuk option */
+select.form-control option:checked,
+select.form-control option:focus {
+    background: rgba(59, 130, 246, 0.3);
+    color: #ffffff;
+    font-weight: 500;
+}
+
+/* Light theme adjustments */
+[data-theme="light"] select.form-control option {
+    background: #ffffff;
+    color: #1e293b;
+}
+
+[data-theme="light"] select.form-control option:hover {
+    background: rgba(14, 165, 233, 0.15);
+    color: var(--primary-color);
+}
+
+[data-theme="light"] select.form-control option:checked,
+[data-theme="light"] select.form-control option:focus {
+    background: rgba(14, 165, 233, 0.2);
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
 .member-photo {
     width: 100px;
     height: 100px;
@@ -392,6 +451,7 @@ h1 {
 
 @media (max-width: 768px) {
     .app-container {
+        display: flex;
         flex-direction: column;
     }
 
@@ -401,6 +461,14 @@ h1 {
         flex-direction: row;
         align-items: center;
         gap: 1.5rem;
+        position: relative;
+        height: auto;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 1.5rem 1.25rem 2rem;
     }
 
     .sidebar nav {
@@ -412,10 +480,6 @@ h1 {
     .nav-link {
         margin-bottom: 0;
         padding: 0.5rem 0.75rem;
-    }
-
-    .main-content {
-        padding: 1.5rem 1.25rem 2rem;
     }
 
     .grid {

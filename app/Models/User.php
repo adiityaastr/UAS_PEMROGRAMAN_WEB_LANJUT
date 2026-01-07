@@ -25,6 +25,12 @@ class User extends Authenticatable
         'tempat_lahir',
         'tanggal_lahir',
         'kode_unik',
+        'program_studi',
+        'semester',
+        'tahun_masuk',
+        'status',
+        'nomor_telepon',
+        'alamat',
     ];
 
     /**

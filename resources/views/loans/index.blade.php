@@ -95,10 +95,8 @@
                             $highlightBook = $searchTerm ? str_ireplace($searchTerm, "<mark style='background: rgba(245, 158, 11, 0.3); padding: 0.1rem 0.2rem; border-radius: 0.25rem;'>$searchTerm</mark>", e($loan->book->title)) : e($loan->book->title);
                             $highlightCode = $searchTerm && $loan->user->kode_unik ? str_ireplace($searchTerm, "<mark style='background: rgba(245, 158, 11, 0.3); padding: 0.1rem 0.2rem; border-radius: 0.25rem;'>$searchTerm</mark>", e($loan->user->kode_unik)) : ($loan->user->kode_unik ? e($loan->user->kode_unik) : '');
                             
-                            $dueDate = \Carbon\Carbon::parse($loan->return_date);
-                            $now = now();
-                            $isLate = $loan->status == 'borrowed' && $now->gt($dueDate);
-                            $daysLate = $isLate ? $now->diffInDays($dueDate) : 0;
+                            $isLate = $loan->isOverdue();
+                            $daysLate = (int) $loan->getDaysLate(); // Pastikan integer
                         @endphp
                         <tr style="{{ $isLate ? 'background: rgba(239, 68, 68, 0.05);' : '' }}">
                             <td><strong>{!! $highlightName !!}</strong></td>
@@ -127,27 +125,18 @@
                                 @endif
                             </td>
                             <td>
-                                @if($loan->status == 'borrowed')
-                                    @php
-                                        $dueDate = \Carbon\Carbon::parse($loan->return_date);
-                                        $now = now();
-                                        $fine = 0;
-                                        if ($now->gt($dueDate)) {
-                                            $daysLate = $now->diffInDays($dueDate);
-                                            $fine = $daysLate * 2000;
-                                        }
-                                    @endphp
-                                    @if($fine > 0)
-                                        <span style="color: var(--danger-color); font-weight: bold;">Est. Rp {{ number_format($fine, 0, ',', '.') }}</span>
-                                    @else
-                                        -
-                                    @endif
+                                @php
+                                    $fine = $loan->calculateFine();
+                                @endphp
+                                @if($fine > 0)
+                                    <span style="color: var(--danger-color); font-weight: bold;">
+                                        Rp {{ number_format($fine, 0, ',', '.') }}
+                                        @if($loan->status == 'borrowed')
+                                            <br><small style="font-size: 0.75rem; opacity: 0.8;">(+ Rp 2.000/hari)</small>
+                                        @endif
+                                    </span>
                                 @else
-                                    @if($loan->fine > 0)
-                                        <span style="color: var(--danger-color); font-weight: bold;">Rp {{ number_format($loan->fine, 0, ',', '.') }}</span>
-                                    @else
-                                        -
-                                    @endif
+                                    <span style="color: var(--text-muted);">-</span>
                                 @endif
                             </td>
                             <td>

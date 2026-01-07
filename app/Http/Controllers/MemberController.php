@@ -18,7 +18,50 @@ class MemberController extends Controller
 
     public function create()
     {
-        return view('members.create');
+        $programStudi = $this->getProgramStudiList();
+        return view('members.create', compact('programStudi'));
+    }
+
+    private function getProgramStudiList()
+    {
+        return [
+            'Teknik Informatika',
+            'Sistem Informasi',
+            'Teknik Komputer',
+            'Teknik Elektro',
+            'Teknik Mesin',
+            'Teknik Sipil',
+            'Teknik Industri',
+            'Teknik Kimia',
+            'Teknik Arsitektur',
+            'Teknik Lingkungan',
+            'Teknik Pertambangan',
+            'Teknik Geologi',
+            'Teknik Perencanaan Wilayah dan Kota',
+            'Manajemen',
+            'Akuntansi',
+            'Ekonomi',
+            'Hukum',
+            'Kedokteran',
+            'Kedokteran Gigi',
+            'Farmasi',
+            'Keperawatan',
+            'Kesehatan Masyarakat',
+            'Psikologi',
+            'Pendidikan',
+            'Bahasa dan Sastra',
+            'Komunikasi',
+            'Sosiologi',
+            'Antropologi',
+            'Sejarah',
+            'Filsafat',
+            'Agribisnis',
+            'Agroteknologi',
+            'Peternakan',
+            'Perikanan',
+            'Kehutanan',
+            'Lainnya',
+        ];
     }
 
     private function generateKodeUnik()
@@ -68,6 +111,12 @@ class MemberController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'tempat_lahir' => 'required|string|max:255',
             'tanggal_lahir' => 'required|date',
+            'program_studi' => 'required|string|max:255',
+            'semester' => 'required|integer|min:1|max:14',
+            'tahun_masuk' => 'required|integer|min:2000|max:' . date('Y'),
+            'status' => 'required|in:aktif,non-aktif',
+            'nomor_telepon' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string',
         ]);
 
         // Generate unique email dengan timestamp + random string untuk menghindari duplikat
@@ -82,6 +131,12 @@ class MemberController extends Controller
             'name' => $request->name,
             'tempat_lahir' => $request->tempat_lahir,
             'tanggal_lahir' => $request->tanggal_lahir,
+            'program_studi' => $request->program_studi,
+            'semester' => $request->semester,
+            'tahun_masuk' => $request->tahun_masuk,
+            'status' => $request->status,
+            'nomor_telepon' => $request->nomor_telepon,
+            'alamat' => $request->alamat,
             'kode_unik' => $this->generateKodeUnik(),
             'role' => 'member',
             'email' => $uniqueEmail,
@@ -104,7 +159,8 @@ class MemberController extends Controller
 
     public function edit(User $member)
     {
-        return view('members.edit', compact('member'));
+        $programStudi = $this->getProgramStudiList();
+        return view('members.edit', compact('member', 'programStudi'));
     }
 
     public function update(Request $request, User $member)
@@ -114,12 +170,24 @@ class MemberController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'tempat_lahir' => 'required|string|max:255',
             'tanggal_lahir' => 'required|date',
+            'program_studi' => 'required|string|max:255',
+            'semester' => 'required|integer|min:1|max:14',
+            'tahun_masuk' => 'required|integer|min:2000|max:' . date('Y'),
+            'status' => 'required|in:aktif,non-aktif',
+            'nomor_telepon' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string',
         ]);
 
         $data = [
             'name' => $request->name,
             'tempat_lahir' => $request->tempat_lahir,
             'tanggal_lahir' => $request->tanggal_lahir,
+            'program_studi' => $request->program_studi,
+            'semester' => $request->semester,
+            'tahun_masuk' => $request->tahun_masuk,
+            'status' => $request->status,
+            'nomor_telepon' => $request->nomor_telepon,
+            'alamat' => $request->alamat,
         ];
 
         if ($request->hasFile('foto')) {
