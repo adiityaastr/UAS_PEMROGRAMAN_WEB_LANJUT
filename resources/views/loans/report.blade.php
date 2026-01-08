@@ -160,7 +160,7 @@
                         <label class="form-label">Pilih Bulan</label>
                         <input type="month" name="month" class="form-control" value="{{ $month }}" required>
                     </div>
-                    <div>
+                    <div style="display: flex; gap: 0.5rem; align-items: end;">
                         <button type="submit" class="btn btn-primary">Filter</button>
                         <a href="{{ route('loans.report') }}" class="btn btn-secondary">Reset</a>
                     </div>

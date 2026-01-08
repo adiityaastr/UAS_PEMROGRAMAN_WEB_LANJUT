@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\LoanController;
+use App\Http\Controllers\FinePaymentController;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/', [AuthController::class, 'login']);
@@ -28,10 +29,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/loans/report', [LoanController::class, 'report'])->name('loans.report');
     Route::get('/api/user-loans/{userId}', [LoanController::class, 'getUserLoans'])->name('api.user-loans');
 
-    // Petugas Routes
-    Route::middleware(['can:isPetugas'])->group(function () {
+    // Petugas & Admin Routes (Admin bisa akses semua fitur petugas)
+    Route::middleware(['can:isPetugasOrAdmin'])->group(function () {
         Route::get('/loans/create', [LoanController::class, 'create'])->name('loans.create');
         Route::post('/loans', [LoanController::class, 'store'])->name('loans.store');
         Route::post('/loans/{loan}/return', [LoanController::class, 'returnBook'])->name('loans.return');
+        Route::post('/loans/{loan}/renew', [LoanController::class, 'renew'])->name('loans.renew');
+        
+        // Fine Payment Routes
+        Route::get('/fine-payments', [FinePaymentController::class, 'index'])->name('fine-payments.index');
+        Route::get('/fine-payments/create/{loan}', [FinePaymentController::class, 'create'])->name('fine-payments.create');
+        Route::post('/fine-payments/{loan}', [FinePaymentController::class, 'store'])->name('fine-payments.store');
     });
 });

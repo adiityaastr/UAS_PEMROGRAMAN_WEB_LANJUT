@@ -22,5 +22,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('isPetugas', function (User $user) {
             return $user->role === 'petugas';
         });
+
+        // Gate untuk fitur yang bisa diakses admin dan petugas
+        Gate::define('isPetugasOrAdmin', function (User $user) {
+            return $user->role === 'petugas' || $user->role === 'admin';
+        });
     }
 }

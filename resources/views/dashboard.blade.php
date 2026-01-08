@@ -121,15 +121,15 @@
     </div>
 
     <script>
-        // Get theme colors
+        // Get theme colors - disesuaikan dengan palet UDINUS (biru #14488e, hijau #1bac4e)
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const textColor = isDark ? '#e2e8f0' : '#1e293b';
-        const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-        const primaryColor = isDark ? '#3b82f6' : '#0ea5e9';
-        const accentColor = isDark ? '#8b5cf6' : '#6366f1';
-        const successColor = isDark ? '#10b981' : '#059669';
+        const textColor = isDark ? '#e2e8f0' : '#0f172a'; // lebih gelap di tema terang agar kontras
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(15, 23, 42, 0.12)'; // garis sedikit lebih tebal
+        const primaryColor = isDark ? '#3b82f6' : '#14488e';
+        const accentColor = isDark ? '#8b5cf6' : '#1bac4e';
+        const successColor = isDark ? '#10b981' : '#1bac4e';
         const dangerColor = isDark ? '#ef4444' : '#dc2626';
-        const warningColor = isDark ? '#f59e0b' : '#d97706';
+        const warningColor = isDark ? '#f59e0b' : '#b45309';
 
         const chartOptions = {
             responsive: true,

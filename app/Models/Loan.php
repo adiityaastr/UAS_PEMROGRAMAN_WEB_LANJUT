@@ -18,12 +18,15 @@ class Loan extends Model
         'actual_return_date',
         'status',
         'fine',
+        'renewal_count',
+        'renewed_at',
     ];
 
     protected $casts = [
         'loan_date' => 'date',
         'return_date' => 'date',
         'actual_return_date' => 'date',
+        'renewed_at' => 'datetime',
     ];
 
     public function user()
@@ -34,6 +37,11 @@ class Loan extends Model
     public function book()
     {
         return $this->belongsTo(Book::class);
+    }
+
+    public function finePayments()
+    {
+        return $this->hasMany(FinePayment::class);
     }
 
     /**
@@ -51,7 +59,8 @@ class Loan extends Model
         $now = Carbon::now()->startOfDay();
 
         if ($now->gt($dueDate)) {
-            $daysLate = $now->diffInDays($dueDate, false);
+            // Hitung selisih hari: jika now > dueDate, maka hasilnya positif
+            $daysLate = $dueDate->diffInDays($now, false);
             // Pastikan nilai positif
             if ($daysLate > 0) {
                 return $daysLate * 2000;
@@ -86,9 +95,56 @@ class Loan extends Model
 
         $dueDate = Carbon::parse($this->return_date)->startOfDay();
         $now = Carbon::now()->startOfDay();
-        $daysLate = $now->diffInDays($dueDate, false);
+        
+        // Hitung selisih hari: jika now > dueDate, maka hasilnya positif
+        // Menggunakan diffInDays dengan absolute = true untuk mendapatkan nilai positif
+        $daysLate = $dueDate->diffInDays($now, false);
         
         // Pastikan nilai positif dan bulat
         return max(0, (int) $daysLate);
+    }
+
+    /**
+     * Check if loan can be renewed
+     * Maksimal 1 kali perpanjangan per peminjaman
+     */
+    public function canBeRenewed()
+    {
+        // Tidak bisa di-renew jika sudah dikembalikan
+        if ($this->status === 'returned') {
+            return false;
+        }
+
+        // Tidak bisa di-renew jika sudah pernah di-renew 1 kali
+        if ($this->renewal_count >= 1) {
+            return false;
+        }
+
+        // Tidak bisa di-renew jika sudah terlambat lebih dari 7 hari
+        if ($this->isOverdue() && $this->getDaysLate() > 7) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get total paid fines
+     */
+    public function getTotalPaidFines()
+    {
+        return $this->finePayments()
+            ->where('status', 'paid')
+            ->sum('amount');
+    }
+
+    /**
+     * Get remaining fine to pay
+     */
+    public function getRemainingFine()
+    {
+        $totalFine = $this->fine ?? $this->calculateFine();
+        $paidFine = $this->getTotalPaidFines();
+        return max(0, $totalFine - $paidFine);
     }
 }

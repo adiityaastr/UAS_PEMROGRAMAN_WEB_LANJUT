@@ -256,4 +256,43 @@ class LoanController extends Controller
             'remaining' => max(0, 4 - $activeLoans)
         ]);
     }
+
+    public function renew(Loan $loan, Request $request)
+    {
+        // Validasi apakah bisa di-renew
+        if (!$loan->canBeRenewed()) {
+            if ($loan->status === 'returned') {
+                return back()->with('error', 'Buku sudah dikembalikan, tidak dapat diperpanjang.');
+            }
+            if ($loan->renewal_count >= 1) {
+                return back()->with('error', 'Peminjaman ini sudah pernah diperpanjang. Maksimal 1 kali perpanjangan per peminjaman.');
+            }
+            if ($loan->isOverdue() && $loan->getDaysLate() > 7) {
+                return back()->with('error', 'Peminjaman yang terlambat lebih dari 7 hari tidak dapat diperpanjang.');
+            }
+            return back()->with('error', 'Peminjaman ini tidak dapat diperpanjang.');
+        }
+
+        // Validasi durasi perpanjangan
+        $request->validate([
+            'duration' => 'required|integer|min:1|max:7',
+        ], [
+            'duration.required' => 'Durasi perpanjangan harus diisi.',
+            'duration.integer' => 'Durasi perpanjangan harus berupa angka.',
+            'duration.min' => 'Durasi perpanjangan minimal 1 hari.',
+            'duration.max' => 'Durasi perpanjangan maksimal 7 hari.',
+        ]);
+
+        $duration = (int) $request->duration;
+
+        // Perpanjang sesuai durasi yang dipilih dari tanggal kembali saat ini
+        $newReturnDate = Carbon::parse($loan->return_date)->addDays($duration);
+        
+        $loan->return_date = $newReturnDate;
+        $loan->renewal_count = $loan->renewal_count + 1;
+        $loan->renewed_at = now();
+        $loan->save();
+
+        return redirect()->route('loans.index')->with('success', 'Peminjaman berhasil diperpanjang ' . $duration . ' hari hingga ' . $newReturnDate->translatedFormat('d F Y') . '.');
+    }
 }
