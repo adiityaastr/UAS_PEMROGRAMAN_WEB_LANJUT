@@ -151,21 +151,6 @@
                     Cetak Laporan
                 </button>
             </div>
-
-            <!-- Filter Section -->
-            <div class="glass fade-in" style="margin-bottom: 1.5rem;">
-                <h3 style="margin-top: 0;">Filter Periode</h3>
-                <form method="GET" action="{{ route('loans.report') }}" style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: end;">
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Pilih Bulan</label>
-                        <input type="month" name="month" class="form-control" value="{{ $month }}" required>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem; align-items: end;">
-                        <button type="submit" class="btn btn-primary">Filter</button>
-                        <a href="{{ route('loans.report') }}" class="btn btn-secondary">Reset</a>
-                    </div>
-                </form>
-            </div>
         </div>
 
         <!-- Report Header -->
@@ -180,6 +165,23 @@
             <p style="margin: 0.25rem 0 0 0; color: var(--text-muted); font-size: 0.9rem;">
                 Dicetak pada: {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y H:i:s') }}
             </p>
+        </div>
+
+        <div class="no-print" style="margin-bottom: 1.5rem;">
+            <!-- Filter Section -->
+            <div class="glass fade-in" style="margin-bottom: 1.5rem;">
+                <h3 style="margin-top: 0;">Filter Periode</h3>
+                <form method="GET" action="{{ route('loans.report') }}" style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: end;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Pilih Bulan</label>
+                        <input type="month" name="month" class="form-control" value="{{ $month }}" required>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: end;">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                        <a href="{{ route('loans.report') }}" class="btn btn-secondary">Reset</a>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <!-- Statistics Cards -->

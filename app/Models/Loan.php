@@ -107,6 +107,7 @@ class Loan extends Model
     /**
      * Check if loan can be renewed
      * Maksimal 1 kali perpanjangan per peminjaman
+     * Tidak boleh telat atau mempunyai denda yang belum dibayar
      */
     public function canBeRenewed()
     {
@@ -120,8 +121,14 @@ class Loan extends Model
             return false;
         }
 
-        // Tidak bisa di-renew jika sudah terlambat lebih dari 7 hari
-        if ($this->isOverdue() && $this->getDaysLate() > 7) {
+        // Tidak bisa di-renew jika sudah telat (tidak boleh telat sama sekali)
+        if ($this->isOverdue()) {
+            return false;
+        }
+
+        // Tidak bisa di-renew jika ada denda yang belum dibayar
+        $remainingFine = $this->getRemainingFine();
+        if ($remainingFine > 0) {
             return false;
         }
 

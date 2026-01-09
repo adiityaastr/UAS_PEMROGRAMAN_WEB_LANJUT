@@ -133,25 +133,25 @@ class LoanController extends Controller
             return back()->with('error', 'Buku sudah dikembalikan.');
         }
 
+        // Cek apakah peminjaman terlambat dan masih memiliki denda yang belum dibayar
+        $isOverdue = $loan->isOverdue();
+        $totalFine = $loan->calculateFine();
+        $paidFine = $loan->getTotalPaidFines();
+        $remainingFine = max(0, $totalFine - $paidFine);
+
+        if ($isOverdue && $remainingFine > 0) {
+            return back()->with('error', 'Peminjaman terlambat dengan denda yang belum dibayar tidak dapat dikembalikan. Silakan selesaikan pembayaran denda terlebih dahulu di menu Pembayaran Denda.');
+        }
+
+        // Set tanggal pengembalian aktual dan status
         $loan->actual_return_date = now();
         $loan->status = 'returned';
 
-        // Calculate Fine - use the fine that's already calculated or calculate if not set
-        if ($loan->fine == 0) {
-            $dueDate = Carbon::parse($loan->return_date)->startOfDay();
-            $returnDate = Carbon::parse($loan->actual_return_date)->startOfDay();
-
-            if ($returnDate->gt($dueDate)) {
-                $daysLate = $returnDate->diffInDays($dueDate, false);
-                if ($daysLate > 0) {
-                    $loan->fine = $daysLate * 2000;
-                }
-            }
-        }
-
+        // Simpan total denda akhir pada record peminjaman
+        $loan->fine = $totalFine;
         $loan->save();
 
-        // Increase Stock
+        // Tambah stok buku kembali
         $loan->book->increment('stock');
 
         return redirect()->route('loans.index')->with('success', 'Buku berhasil dikembalikan. Denda: Rp ' . number_format($loan->fine, 0, ',', '.'));
@@ -267,8 +267,12 @@ class LoanController extends Controller
             if ($loan->renewal_count >= 1) {
                 return back()->with('error', 'Peminjaman ini sudah pernah diperpanjang. Maksimal 1 kali perpanjangan per peminjaman.');
             }
-            if ($loan->isOverdue() && $loan->getDaysLate() > 7) {
-                return back()->with('error', 'Peminjaman yang terlambat lebih dari 7 hari tidak dapat diperpanjang.');
+            if ($loan->isOverdue()) {
+                return back()->with('error', 'Peminjaman yang terlambat tidak dapat diperpanjang. Silakan kembalikan buku terlebih dahulu.');
+            }
+            $remainingFine = $loan->getRemainingFine();
+            if ($remainingFine > 0) {
+                return back()->with('error', 'Peminjaman dengan denda yang belum dibayar tidak dapat diperpanjang. Silakan bayar denda terlebih dahulu.');
             }
             return back()->with('error', 'Peminjaman ini tidak dapat diperpanjang.');
         }

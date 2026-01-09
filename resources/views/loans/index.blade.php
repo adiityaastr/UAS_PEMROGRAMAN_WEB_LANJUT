@@ -175,10 +175,21 @@
                                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                     @if($loan->status == 'borrowed')
                                         @can('isPetugasOrAdmin')
-                                            <form action="{{ route('loans.return', $loan) }}" method="POST">
-                                                @csrf
-                                                <button type="submit" class="btn btn-success btn-sm">Kembalikan</button>
-                                            </form>
+                                            @php
+                                                $isOverdue = $loan->isOverdue();
+                                                $remainingFine = $loan->getRemainingFine();
+                                            @endphp
+
+                                            @if($isOverdue && $remainingFine > 0)
+                                                <span style="color: var(--danger-color); font-size: 0.75rem;" title="Peminjaman terlambat dengan denda belum dibayar tidak bisa dikembalikan">
+                                                    Bayar denda terlebih dahulu
+                                                </span>
+                                            @else
+                                                <form action="{{ route('loans.return', $loan) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-success btn-sm">Kembalikan</button>
+                                                </form>
+                                            @endif
                                             
                                             @php
                                                 $canRenew = $loan->canBeRenewed();
@@ -189,6 +200,18 @@
                                                     onclick="showRenewModal({{ $loan->id }}, '{{ $loan->book->title }}', '{{ $loan->user->name }}', '{{ \Carbon\Carbon::parse($loan->return_date)->format('Y-m-d') }}')">
                                                     Perpanjang
                                                 </button>
+                                            @elseif($loan->renewal_count >= 1)
+                                                <span style="color: var(--text-muted); font-size: 0.75rem;" title="Sudah pernah diperpanjang">
+                                                    Tidak bisa diperpanjang
+                                                </span>
+                                            @elseif($isOverdue)
+                                                <span style="color: var(--danger-color); font-size: 0.75rem;" title="Peminjaman terlambat tidak bisa diperpanjang">
+                                                    Tidak bisa diperpanjang (telat)
+                                                </span>
+                                            @elseif($remainingFine > 0)
+                                                <span style="color: var(--danger-color); font-size: 0.75rem;" title="Ada denda yang belum dibayar">
+                                                    Tidak bisa diperpanjang (ada denda)
+                                                </span>
                                             @endif
                                         @endcan
                                     @else

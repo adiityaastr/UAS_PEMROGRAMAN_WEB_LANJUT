@@ -14,10 +14,6 @@
                 <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: var(--danger-color); font-weight: 600;">
                     {{ $loansWithFines->count() }} peminjaman
                 </span>
-            @else
-                <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--success-color); font-weight: 600;">
-                    Semua denda sudah lunas
-                </span>
             @endif
         </div>
 
@@ -103,7 +99,6 @@
         @else
             <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
                 <p style="margin: 0; font-size: 1.1rem;">✅ Tidak ada peminjaman dengan denda yang belum dibayar.</p>
-                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Semua denda sudah lunas atau tidak ada peminjaman yang terlambat.</p>
             </div>
         @endif
     </div>
